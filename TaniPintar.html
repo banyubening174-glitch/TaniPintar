@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaniPintar - Tahu harga pasar, tanam di waktu yang tepat.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans / Lexend -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lexend:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: {
+                            50: '#FAF7F2',
+                            100: '#F5EFF5',
+                            200: '#EFE7DB',
+                            card: '#FFFFFF'
+                        },
+                        brand: {
+                            green: '#1E513B',
+                            greenHover: '#163D2C',
+                            lightGreen: '#EBF7EE',
+                            greenBadge: '#22C55E',
+                            red: '#D9383A',
+                            lightRed: '#FDF2F2',
+                            amber: '#D97706',
+                            lightAmber: '#FFFBEB'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Lexend', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FAF7F2;
+            color: #1F2937;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF7F2;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+
+        .chart-zero-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #334155;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-brand-green selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header id="appHeader" class="bg-[#FAF7F2] border-b border-stone-200/60 sticky top-0 z-40 px-4 py-3.5 transition-all">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchTab('pasar')">
+                <div class="w-9 h-9 bg-brand-green rounded-full flex items-center justify-center text-white text-lg shadow-sm">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <span class="text-xl font-extrabold text-stone-900 tracking-tight">TaniPintar</span>
+            </div>
+
+            <!-- User Auth Controls -->
+            <div id="userHeaderControls" class="flex items-center gap-3">
+                <span id="headerUserGreeting" class="text-sm font-semibold text-stone-700 hidden">Halo, <span id="headerUserName"></span></span>
+                <button onclick="handleAuthAction()" id="btnAuthHeader" class="bg-white hover:bg-stone-100 text-stone-800 text-xs sm:text-sm font-bold px-3.5 py-1.5 rounded-full border border-stone-300 shadow-sm flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-right-to-bracket text-stone-500" id="authHeaderIcon"></i>
+                    <span id="btnAuthHeaderText">Masuk</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 mb-20">
+
+        <!-- VIEW 0: AUTH / LOGIN & REGISTER SCREEN -->
+        <section id="viewAuth" class="flex min-h-[80vh] items-center justify-center">
+            <div class="w-full bg-white rounded-3xl border border-stone-200 shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-2">
+                <div class="relative min-h-[320px] lg:min-h-[550px] bg-stone-900 flex flex-col justify-between p-8 text-white overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1000&auto=format&fit=crop" alt="Petani Sayur Indonesia" class="absolute inset-0 w-full h-full object-cover opacity-65">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20"></div>
+
+                    <div class="relative z-10">
+                        <span class="bg-black/40 backdrop-blur-md text-stone-200 text-[10px] sm:text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border border-white/20 uppercase">
+                            UNTUK PETANI SAYUR INDONESIA
+                        </span>
+                    </div>
+
+                    <div class="relative z-10 space-y-2">
+                        <h1 class="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-white">
+                            Tahu harga pasar, tanam di waktu yang tepat.
+                        </h1>
+                        <p class="text-stone-300 text-sm font-medium">Bantu petani terhindar dari krisis harga anjlok akibat stok panen melimpah.</p>
+                    </div>
+                </div>
+
+                <div class="p-8 sm:p-12 flex flex-col justify-center bg-[#FAF7F2] space-y-6">
+                    <div>
+                        <div class="w-10 h-10 bg-brand-green rounded-full flex items-center justify-center text-white text-xl shadow mb-3">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <h2 id="authFormTitle" class="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">Daftar Akun Baru</h2>
+                        <p id="authFormSubtitle" class="text-stone-600 text-xs sm:text-sm mt-1">Lengkapi nama dan nomor HP Anda untuk membuat akun TaniPintar.</p>
+                    </div>
+
+                    <div class="bg-stone-200/70 p-1 rounded-full flex text-xs font-bold">
+                        <button onclick="setAuthTab('daftar')" id="tabBtnDaftar" class="flex-1 py-2 rounded-full bg-white text-stone-900 shadow-sm transition">Daftar Akun</button>
+                        <button onclick="setAuthTab('masuk')" id="tabBtnMasuk" class="flex-1 py-2 rounded-full text-stone-600 hover:text-stone-900 transition">Masuk</button>
+                    </div>
+
+                    <form id="formRegister" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Nama Lengkap / Panggilan</label>
+                            <input type="text" id="regName" placeholder="Contoh: Pak Budi / Bu Siti" required class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green text-stone-800">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Nomor HP</label>
+                            <input type="tel" id="regPhone" placeholder="08xxxxxxxxxx" required class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green text-stone-800">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Buat Kata Sandi</label>
+                            <div class="relative">
+                                <input type="password" id="regPassword" placeholder="Minimal 4 karakter" required class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green text-stone-800">
+                                <button type="button" onclick="togglePassVisibility('regPassword', 'passEyeIconReg')" class="absolute right-3.5 top-3.5 text-stone-400 hover:text-stone-600">
+                                    <i class="fa-regular fa-eye" id="passEyeIconReg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-brand-green hover:bg-brand-greenHover text-white font-bold py-3.5 rounded-xl shadow-md transition text-sm">
+                            Daftar & Masuk Aplikasi
+                        </button>
+                    </form>
+
+                    <form id="formLogin" onsubmit="handleLoginSubmit(event)" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Nomor HP</label>
+                            <input type="tel" id="loginPhone" placeholder="08xxxxxxxxxx" value="08123456789" required class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green text-stone-800">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Kata Sandi</label>
+                            <div class="relative">
+                                <input type="password" id="loginPassword" placeholder="Minimal 4 huruf/angka" value="123456" required class="w-full bg-white border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green text-stone-800">
+                                <button type="button" onclick="togglePassVisibility('loginPassword', 'passEyeIconLogin')" class="absolute right-3.5 top-3.5 text-stone-400 hover:text-stone-600">
+                                    <i class="fa-regular fa-eye" id="passEyeIconLogin"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-brand-green hover:bg-brand-greenHover text-white font-bold py-3.5 rounded-xl shadow-md transition text-sm">
+                            Masuk
+                        </button>
+                    </form>
+
+                    <div class="relative flex py-1 items-center">
+                        <div class="flex-grow border-t border-stone-300"></div>
+                        <span class="flex-shrink mx-3 text-xs text-stone-400 font-semibold">atau</span>
+                        <div class="flex-grow border-t border-stone-300"></div>
+                    </div>
+
+                    <button onclick="loginAs('Pak Darto')" class="w-full bg-white hover:bg-stone-50 border-2 border-brand-green text-brand-green font-extrabold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-check"></i> Coba Langsung (Akun Demo Pak Darto)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 1: HARGA PASAR DASHBOARD -->
+        <section id="viewPasar" class="hidden space-y-8">
+            <div class="relative rounded-3xl overflow-hidden bg-stone-900 text-white min-h-[220px] sm:min-h-[260px] flex flex-col justify-end p-6 sm:p-8 shadow-md border border-stone-800">
+                <img src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=1200&auto=format&fit=crop" alt="Pasar Sayur Tradisional" class="absolute inset-0 w-full h-full object-cover opacity-45">
+                <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-stone-300 tracking-wide uppercase">Halo, <span class="activeUserName">Pak Darto</span></span>
+                        <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">Harga sayur di pasar hari ini</h1>
+                        <p class="text-xs sm:text-sm text-stone-300 font-medium" id="currentDateDisplay">Memuat tanggal...</p>
+                    </div>
+
+                    <button onclick="switchTab('tanya')" class="bg-white/95 hover:bg-white text-stone-900 px-5 py-3 rounded-full font-extrabold text-xs sm:text-sm shadow-xl border border-stone-200 flex items-center gap-2.5 self-start md:self-auto transition transform hover:scale-105 active:scale-95">
+                        <i class="fa-regular fa-comment-dots text-brand-green text-base"></i> Tanya Pak Tani AI
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <span class="text-[11px] font-extrabold text-amber-700 tracking-widest uppercase">HARGA PASAR</span>
+                    <h2 class="text-2xl font-black text-stone-900 tracking-tight">Harga rata-rata per kilo</h2>
+                    <p class="text-xs sm:text-sm text-stone-500 font-medium">Panah hijau ke atas = harga naik. Panah merah ke bawah = harga turun.</p>
+                </div>
+
+                <div id="gridPrices" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+
+            <div class="space-y-4 pt-4">
+                <div>
+                    <span class="text-[11px] font-extrabold text-amber-700 tracking-widest uppercase">SARAN TANAM</span>
+                    <h2 class="text-2xl font-black text-stone-900 tracking-tight">Sayur apa yang cocok ditanam?</h2>
+                    <p class="text-xs sm:text-sm text-stone-500 font-medium">Jangan ikut-ikutan menanam sayur yang sedang mahal — saat panen nanti harganya bisa anjlok.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-[#EBF7EE] border-2 border-emerald-500 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center gap-2 text-emerald-900 font-extrabold text-base">
+                            <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            Bagus Ditanam Sekarang
+                        </div>
+                        <div id="colBagusDitanam" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bg-[#FFFBEB] border-2 border-amber-400 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center gap-2 text-amber-900 font-extrabold text-base">
+                            <div class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                            </div>
+                            Boleh Ditanam Secukupnya
+                        </div>
+                        <div id="colBolehDitanam" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bg-[#FDF2F2] border-2 border-red-500 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center gap-2 text-red-900 font-extrabold text-base">
+                            <div class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            Awas! Rawan Banjir Stok
+                        </div>
+                        <div id="colAwasDitanam" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: GRAFIK HARGA -->
+        <section id="viewGrafik" class="hidden space-y-6">
+            <div>
+                <span class="text-[11px] font-extrabold text-amber-700 tracking-widest uppercase">GRAFIK HARGA</span>
+                <h1 class="text-3xl font-black text-stone-900 tracking-tight">Naik atau turun?</h1>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-md space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-stone-900">Perubahan harga minggu ini</h3>
+                        <p class="text-xs text-stone-500 font-medium">Diukur berdasarkan persentase perubahan harga pasar dibanding minggu lalu</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs font-bold text-stone-700 bg-stone-50 p-2.5 rounded-full border border-stone-200">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Hijau = naik</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span> Merah = turun</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Kuning = stabil</span>
+                    </div>
+                </div>
+
+                <div class="relative py-4 space-y-4 overflow-x-auto min-w-[300px]">
+                    <div class="chart-zero-line"></div>
+                    <div id="chartContainer" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: TANYA AI (KOLOM KETIK & TANYA JAWAB) -->
+        <section id="viewTanya" class="hidden space-y-6">
+            <div>
+                <span class="text-[11px] font-extrabold text-amber-700 tracking-widest uppercase">KONSULTASI AI</span>
+                <h1 class="text-3xl font-black text-stone-900 tracking-tight">Tanya Pak Tani AI</h1>
+                <p class="text-stone-600 text-xs sm:text-sm font-medium">Ketik pertanyaan Anda seputar pertanian, tanaman, dan prediksi harga pasar.</p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-md space-y-6">
+                <div class="flex items-center gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-200">
+                    <div class="w-14 h-14 bg-brand-green text-white rounded-full flex items-center justify-center text-2xl shadow">
+                        <i class="fa-solid fa-user-nurse"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-stone-900 text-lg">Mbah Tani (Asisten AI)</h3>
+                        <p class="text-xs text-stone-500 font-medium">Siap menjawab pertanyaan seputar tanaman & prediksi harga pasar.</p>
+                    </div>
+                </div>
+
+                <!-- Chat Bubble Jawaban AI -->
+                <div id="aiChatBubble" class="bg-stone-900 text-white p-5 rounded-2xl text-base font-semibold leading-relaxed shadow-inner space-y-2">
+                    <p id="aiChatText" class="text-stone-100">
+                        "Sugeng rawuh <span class="activeUserName">Pak Darto</span>! Silakan ketik pertanyaan Anda pada kolom di bawah atau pilih pertanyaan cepat yang tersedia."
+                    </p>
+                </div>
+
+                <!-- Form Kolom Ketik Tanya Jawab -->
+                <form onsubmit="handleChatSubmit(event)" class="flex gap-2">
+                    <input type="text" id="chatInputQuery" placeholder="Ketik pertanyaan di sini (misal: Rawan banjir stok apa saja?)..." class="flex-1 bg-stone-50 border border-stone-300 rounded-2xl px-4 py-3.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green text-stone-800">
+                    <button type="submit" class="bg-brand-green hover:bg-brand-greenHover text-white px-6 py-3.5 rounded-2xl font-bold text-sm shadow-md transition flex items-center gap-2 shrink-0">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim
+                    </button>
+                </form>
+
+                <!-- Tombol Pertanyaan Cepat -->
+                <div class="space-y-2">
+                    <p class="text-xs font-bold text-stone-500">Atau klik pertanyaan cepat berikut:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="sendQuickQuery('Bagusnya nanam apa bulan ini supaya harganya tinggi saat panen?')" class="bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold px-3.5 py-2.5 rounded-full border border-stone-200 transition">
+                            🌱 Bagusnya nanam apa bulan ini?
+                        </button>
+                        <button onclick="sendQuickQuery('Apakah tomat aman ditanam sekarang atau bakal anjlok?')" class="bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold px-3.5 py-2.5 rounded-full border border-stone-200 transition">
+                            🍅 Tomat aman ditanam sekarang?
+                        </button>
+                        <button onclick="sendQuickQuery('Bagaimana ramalan harga cabai merah 2 bulan ke depan?')" class="bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold px-3.5 py-2.5 rounded-full border border-stone-200 transition">
+                            🌶️ Ramalan harga cabai merah?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: LAPOR HARGA / TANAM -->
+        <section id="viewLapor" class="hidden space-y-6">
+            <div>
+                <span class="text-[11px] font-extrabold text-amber-700 tracking-widest uppercase">GOTONG ROYONG DATA</span>
+                <h1 class="text-3xl font-black text-stone-900 tracking-tight">Lapor Harga & Tanam</h1>
+                <p class="text-stone-600 text-xs sm:text-sm font-medium">Bantu sesama petani dengan melaporkan harga pasar terkini atau tanaman baru Anda.</p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-md max-w-xl mx-auto space-y-5">
+                <form onsubmit="handleReportSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Jenis Laporan</label>
+                        <select id="laporType" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-green">
+                            <option value="tanam">🌱 Saya Baru Saja Menanam (Sawah/Lahan)</option>
+                            <option value="harga">💰 Lapor Harga Jual di Pasar Lokal</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Pilih Sayuran</label>
+                        <select id="laporVeggie" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-green">
+                            <option value="Cabai Merah Keriting">🌶️ Cabai Merah Keriting</option>
+                            <option value="Cabai Rawit">🌶️ Cabai Rawit</option>
+                            <option value="Bawang Merah">🧅 Bawang Merah</option>
+                            <option value="Tomat">🍅 Tomat</option>
+                            <option value="Kubis / Kol">🥬 Kubis / Kol</option>
+                            <option value="Sawi / Caisim">🥬 Sawi / Caisim</option>
+                            <option value="Terong">🍆 Terong</option>
+                            <option value="Kentang">🥔 Kentang</option>
+                            <option value="Wortel">🥕 Wortel</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1" id="laporValueLabel">Luas Lahan / Jumlah (Kotak / Hektar / Kg)</label>
+                        <input type="text" id="laporValue" placeholder="Contoh: 1 Kotak Bahu atau Rp 35.000/kg" required class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Lokasi Pasar / Desa</label>
+                        <input type="text" id="laporLocation" placeholder="Contoh: Kebonagung / Pasar Karanganyar" value="Pasar Kebonagung" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-green">
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-green hover:bg-brand-greenHover text-white font-extrabold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Kirim Laporan
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FIXED BOTTOM NAVIGATION BAR -->
+    <nav id="bottomNav" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200/80 z-50 shadow-lg">
+        <div class="max-w-md mx-auto grid grid-cols-4 py-2 px-2">
+            <button onclick="switchTab('pasar')" id="navTabPasar" class="flex flex-col items-center justify-center gap-1 text-brand-green transition py-1">
+                <div id="iconBgPasar" class="w-10 h-8 rounded-full bg-brand-lightGreen flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <span class="text-[11px] font-bold">Harga Pasar</span>
+            </button>
+
+            <button onclick="switchTab('grafik')" id="navTabGrafik" class="flex flex-col items-center justify-center gap-1 text-stone-500 hover:text-stone-800 transition py-1">
+                <div id="iconBgGrafik" class="w-10 h-8 rounded-full flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <span class="text-[11px] font-bold">Grafik</span>
+            </button>
+
+            <button onclick="switchTab('tanya')" id="navTabTanya" class="flex flex-col items-center justify-center gap-1 text-stone-500 hover:text-stone-800 transition py-1">
+                <div id="iconBgTanya" class="w-10 h-8 rounded-full flex items-center justify-center text-lg">
+                    <i class="fa-regular fa-comment-dots"></i>
+                </div>
+                <span class="text-[11px] font-bold">Tanya AI</span>
+            </button>
+
+            <button onclick="switchTab('lapor')" id="navTabLapor" class="flex flex-col items-center justify-center gap-1 text-stone-500 hover:text-stone-800 transition py-1">
+                <div id="iconBgLapor" class="w-10 h-8 rounded-full flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-pencil"></i>
+                </div>
+                <span class="text-[11px] font-bold">Lapor Harga</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Set Tanggal Otomatis Berdasarkan Hari Ini (Real-time dari Kalender Perangkat)
+        document.addEventListener("DOMContentLoaded", function() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date(); // Mengambil tanggal riil secara otomatis dari perangkat saat ini
+            const dateString = today.toLocaleDateString('id-ID', options);
+            const dateElement = document.getElementById('currentDateDisplay');
+            if(dateElement) {
+                dateElement.innerText = dateString;
+            }
+        });
+
+        // DATA MASTER SAYURAN & HARGA
+        const masterData = [
+            {
+                code: 'CM',
+                name: 'Cabai Merah Keriting',
+                price: 55667,
+                changePct: 13.6,
+                trend: 'up',
+                colorBg: 'bg-red-600',
+                statusCategory: 'awas',
+                statusTitle: 'Cabai Merah Keriting',
+                statusDesc: 'Harga sedang tinggi, banyak petani akan ikut menanam. Saat panen sekitar 90 hari lagi, stok bisa melimpah dan harga anjlok.'
+            },
+            {
+                code: 'CR',
+                name: 'Cabai Rawit',
+                price: 60000,
+                changePct: 10.1,
+                trend: 'up',
+                colorBg: 'bg-amber-600',
+                statusCategory: 'awas',
+                statusTitle: 'Cabai Rawit',
+                statusDesc: 'Sedang disukai pasar namun siklus tanam serentak berisiko membuat harga turun saat panen.'
+            },
+            {
+                code: 'BM',
+                name: 'Bawang Merah',
+                price: 30000,
+                changePct: -6.2,
+                trend: 'down',
+                colorBg: 'bg-fuchsia-700',
+                statusCategory: 'bagus',
+                statusTitle: 'Bawang Merah',
+                statusDesc: 'Harga sedang rendah, sedikit petani yang mau menanam. Saat panen sekitar 60 hari lagi, harga berpeluang naik.'
+            },
+            {
+                code: 'T',
+                name: 'Tomat',
+                price: 9000,
+                changePct: -11.5,
+                trend: 'down',
+                colorBg: 'bg-red-500',
+                statusCategory: 'bagus',
+                statusTitle: 'Tomat Buah',
+                statusDesc: 'Pasokan pasaran sedang stabil berkurang, cocok untuk investasi tanam dalam jangka pendek.'
+            },
+            {
+                code: 'K',
+                name: 'Kubis / Kol',
+                price: 6500,
+                changePct: -13.3,
+                trend: 'down',
+                colorBg: 'bg-emerald-600',
+                statusCategory: 'bagus',
+                statusTitle: 'Kubis / Kol',
+                statusDesc: 'Modal murah dan sedikit pesaing tanam saat ini.'
+            },
+            {
+                code: 'S',
+                name: 'Sawi / Caisim',
+                price: 8977,
+                changePct: -1.9,
+                trend: 'stable',
+                colorBg: 'bg-emerald-500',
+                statusCategory: 'boleh',
+                statusTitle: 'Sawi / Caisim',
+                statusDesc: 'Harga dan stok cukup normal. Boleh ditanam secukupnya, panen sekitar 35 hari.'
+            },
+            {
+                code: 'T',
+                name: 'Terong',
+                price: 10333,
+                changePct: 1.6,
+                trend: 'stable',
+                colorBg: 'bg-purple-600',
+                statusCategory: 'boleh',
+                statusTitle: 'Terong Ungu',
+                statusDesc: 'Permintaan pasar tergolong stabil dan umur panen terhitung panjang.'
+            },
+            {
+                code: 'K',
+                name: 'Kentang',
+                price: 15667,
+                changePct: 3.3,
+                trend: 'stable',
+                colorBg: 'bg-amber-700',
+                statusCategory: 'boleh',
+                statusTitle: 'Kentang Dieng',
+                statusDesc: 'Harga stabil dan pasokan cukup seimbang di pasar konsumen.'
+            },
+            {
+                code: 'W',
+                name: 'Wortel',
+                price: 14333,
+                changePct: 11.7,
+                trend: 'up',
+                colorBg: 'bg-orange-500',
+                statusCategory: 'boleh',
+                statusTitle: 'Wortel',
+                statusDesc: 'Harga naik tipis, disarankan menanam dengan porsi secukupnya.'
+            }
+        ];
+
+        // USER MANAGEMENT (LOCALSTORAGE)
+        let usersDB = JSON.parse(localStorage.getItem('taniPintarUsers')) || [
+            { name: 'Pak Darto', phone: '08123456789', password: '123' }
+        ];
+
+        let currentUser = '';
+        let currentTab = 'pasar';
+
+        window.onload = function() {
+            renderPricesGrid();
+            renderSaranTanam();
+            renderGrafik();
+            showAuthView();
+        };
+
+        function showAuthView() {
+            document.getElementById('viewPasar').classList.add('hidden');
+            document.getElementById('viewGrafik').classList.add('hidden');
+            document.getElementById('viewTanya').classList.add('hidden');
+            document.getElementById('viewLapor').classList.add('hidden');
+            document.getElementById('bottomNav').classList.add('hidden');
+            
+            document.getElementById('viewAuth').classList.remove('hidden');
+            document.getElementById('headerUserGreeting').classList.add('hidden');
+            document.getElementById('btnAuthHeaderText').innerText = 'Masuk / Daftar';
+            document.getElementById('authHeaderIcon').className = 'fa-solid fa-right-to-bracket text-stone-500';
+        }
+
+        function renderPricesGrid() {
+            const container = document.getElementById('gridPrices');
+            container.innerHTML = '';
+
+            masterData.forEach(item => {
+                let badgeClass, badgeText, iconArrow;
+
+                if (item.trend === 'up') {
+                    badgeClass = 'bg-[#EBF7EE] text-emerald-800 border-emerald-300';
+                    iconArrow = '<div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0"><i class="fa-solid fa-arrow-up"></i></div>';
+                    badgeText = `<span class="font-bold">Harga Naik +${item.changePct}%</span><br><span class="text-[11px] font-normal text-emerald-700">Bagus untuk dijual - dibanding minggu lalu</span>`;
+                } else if (item.trend === 'down') {
+                    badgeClass = 'bg-[#FDF2F2] text-red-800 border-red-300';
+                    iconArrow = '<div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm shrink-0"><i class="fa-solid fa-arrow-down"></i></div>';
+                    badgeText = `<span class="font-bold">Harga Turun ${item.changePct}%</span><br><span class="text-[11px] font-normal text-red-700">Harga sedang murah - dibanding minggu lalu</span>`;
+                } else {
+                    badgeClass = 'bg-[#FFFBEB] text-amber-900 border-amber-300';
+                    iconArrow = '<div class="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm shrink-0"><i class="fa-solid fa-arrow-right"></i></div>';
+                    badgeText = `<span class="font-bold">Harga Stabil ${item.changePct >= 0 ? '+' : ''}${item.changePct}%</span><br><span class="text-[11px] font-normal text-amber-800">Harga aman - dibanding minggu lalu</span>`;
+                }
+
+                const formattedPrice = new Intl.NumberFormat('id-ID').format(item.price);
+
+                const cardHtml = `
+                    <div class="bg-white rounded-2xl p-4 border border-stone-200/90 shadow-sm space-y-3 hover:shadow-md transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 ${item.colorBg} text-white font-black text-sm rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                                ${item.code}
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-stone-900 text-sm leading-tight">${item.name}</h3>
+                                <p class="text-lg font-black text-stone-900 tracking-tight">Rp ${formattedPrice} <span class="text-xs font-semibold text-stone-400">/kg</span></p>
+                            </div>
+                        </div>
+
+                        <div class="p-2.5 rounded-xl border ${badgeClass} flex items-center gap-2.5">
+                            ${iconArrow}
+                            <div class="text-xs leading-tight">
+                                ${badgeText}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function renderSaranTanam() {
+            const colBagus = document.getElementById('colBagusDitanam');
+            const colBoleh = document.getElementById('colBolehDitanam');
+            const colAwas = document.getElementById('colAwasDitanam');
+
+            colBagus.innerHTML = '';
+            colBoleh.innerHTML = '';
+            colAwas.innerHTML = '';
+
+            masterData.forEach(item => {
+                const card = `
+                    <div class="bg-white rounded-xl p-3 border border-stone-200/80 shadow-sm space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-md ${item.colorBg} text-white text-[10px] font-black flex items-center justify-center">${item.code}</span>
+                            <h4 class="font-extrabold text-stone-900 text-xs">${item.statusTitle}</h4>
+                        </div>
+                        <p class="text-[11px] text-stone-600 font-medium leading-relaxed">${item.statusDesc}</p>
+                    </div>
+                `;
+
+                if (item.statusCategory === 'bagus') colBagus.innerHTML += card;
+                else if (item.statusCategory === 'boleh') colBoleh.innerHTML += card;
+                else if (item.statusCategory === 'awas') colAwas.innerHTML += card;
+            });
+        }
+
+        function renderGrafik() {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = '';
+
+            masterData.forEach(item => {
+                const val = item.changePct;
+                const isPositive = val >= 0;
+                const absVal = Math.abs(val);
+
+                const barWidth = Math.min((absVal / 20) * 45, 45);
+
+                let barColor = 'bg-amber-500';
+                if (item.trend === 'up') barColor = 'bg-emerald-500';
+                if (item.trend === 'down') barColor = 'bg-red-500';
+
+                const barLabel = isPositive ? `Naik ${val}%` : `Turun ${absVal}%`;
+
+                const rowHtml = `
+                    <div class="flex items-center py-1.5 text-xs font-bold text-stone-800">
+                        <div class="w-28 sm:w-36 text-right pr-4 font-extrabold text-stone-800 shrink-0">
+                            ${item.name}
+                        </div>
+
+                        <div class="flex-1 relative h-7 flex items-center">
+                            ${isPositive ? `
+                                <div class="absolute left-1/2 flex items-center gap-2">
+                                    <div class="${barColor} h-6 rounded-r-md transition-all duration-700 shadow-sm" style="width: ${barWidth * 4}px; min-width: 12px;"></div>
+                                    <span class="text-[11px] font-black text-stone-900 whitespace-nowrap">${barLabel}</span>
+                                </div>
+                            ` : `
+                                <div class="absolute right-1/2 flex items-center gap-2 flex-row-reverse">
+                                    <div class="${barColor} h-6 rounded-l-md transition-all duration-700 shadow-sm" style="width: ${barWidth * 4}px; min-width: 12px;"></div>
+                                    <span class="text-[11px] font-black text-stone-900 whitespace-nowrap">${barLabel}</span>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += rowHtml;
+            });
+        }
+
+        function switchTab(tabName) {
+            if (!currentUser) {
+                showAuthView();
+                return;
+            }
+
+            currentTab = tabName;
+
+            document.getElementById('viewPasar').classList.add('hidden');
+            document.getElementById('viewGrafik').classList.add('hidden');
+            document.getElementById('viewTanya').classList.add('hidden');
+            document.getElementById('viewLapor').classList.add('hidden');
+            document.getElementById('viewAuth').classList.add('hidden');
+
+            ['Pasar', 'Grafik', 'Tanya', 'Lapor'].forEach(t => {
+                const navBtn = document.getElementById(`navTab${t}`);
+                const iconBg = document.getElementById(`iconBg${t}`);
+                if (navBtn && iconBg) {
+                    navBtn.className = "flex flex-col items-center justify-center gap-1 text-stone-500 hover:text-stone-800 transition py-1";
+                    iconBg.className = "w-10 h-8 rounded-full flex items-center justify-center text-lg";
+                }
+            });
+
+            if (tabName === 'pasar') {
+                document.getElementById('viewPasar').classList.remove('hidden');
+                document.getElementById('navTabPasar').className = "flex flex-col items-center justify-center gap-1 text-brand-green transition py-1";
+                document.getElementById('iconBgPasar').className = "w-10 h-8 rounded-full bg-brand-lightGreen flex items-center justify-center text-lg";
+            } else if (tabName === 'grafik') {
+                document.getElementById('viewGrafik').classList.remove('hidden');
+                document.getElementById('navTabGrafik').className = "flex flex-col items-center justify-center gap-1 text-brand-green transition py-1";
+                document.getElementById('iconBgGrafik').className = "w-10 h-8 rounded-full bg-brand-lightGreen flex items-center justify-center text-lg";
+            } else if (tabName === 'tanya') {
+                document.getElementById('viewTanya').classList.remove('hidden');
+                document.getElementById('navTabTanya').className = "flex flex-col items-center justify-center gap-1 text-brand-green transition py-1";
+                document.getElementById('iconBgTanya').className = "w-10 h-8 rounded-full bg-brand-lightGreen flex items-center justify-center text-lg";
+            } else if (tabName === 'lapor') {
+                document.getElementById('viewLapor').classList.remove('hidden');
+                document.getElementById('navTabLapor').className = "flex flex-col items-center justify-center gap-1 text-brand-green transition py-1";
+                document.getElementById('iconBgLapor').className = "w-10 h-8 rounded-full bg-brand-lightGreen flex items-center justify-center text-lg";
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function loginAs(userName) {
+            currentUser = userName;
+            updateUserDisplays();
+            document.getElementById('bottomNav').classList.remove('hidden');
+            switchTab('pasar');
+        }
+
+        function handleAuthAction() {
+            if (currentUser) {
+                currentUser = '';
+                showAuthView();
+            } else {
+                showAuthView();
+            }
+        }
+
+        function updateUserDisplays() {
+            document.querySelectorAll('.activeUserName').forEach(el => el.innerText = currentUser || 'Petani');
+            document.getElementById('headerUserName').innerText = currentUser || '';
+            
+            if (currentUser) {
+                document.getElementById('headerUserGreeting').classList.remove('hidden');
+                document.getElementById('btnAuthHeaderText').innerText = 'Keluar';
+                document.getElementById('authHeaderIcon').className = 'fa-solid fa-arrow-right-from-bracket text-stone-500';
+            } else {
+                document.getElementById('headerUserGreeting').classList.add('hidden');
+                document.getElementById('btnAuthHeaderText').innerText = 'Masuk / Daftar';
+                document.getElementById('authHeaderIcon').className = 'fa-solid fa-right-to-bracket text-stone-500';
+            }
+        }
+
+        function setAuthTab(mode) {
+            const btnM = document.getElementById('tabBtnMasuk');
+            const btnD = document.getElementById('tabBtnDaftar');
+            const formL = document.getElementById('formLogin');
+            const formR = document.getElementById('formRegister');
+            const title = document.getElementById('authFormTitle');
+            const sub = document.getElementById('authFormSubtitle');
+
+            if (mode === 'masuk') {
+                btnM.className = "flex-1 py-2 rounded-full bg-white text-stone-900 shadow-sm transition";
+                btnD.className = "flex-1 py-2 rounded-full text-stone-600 hover:text-stone-900 transition";
+                formL.classList.remove('hidden');
+                formR.classList.add('hidden');
+                title.innerText = "Masuk ke TaniPintar";
+                sub.innerText = "Gunakan nomor HP dan kata sandi Anda untuk masuk.";
+            } else {
+                btnD.className = "flex-1 py-2 rounded-full bg-white text-stone-900 shadow-sm transition";
+                btnM.className = "flex-1 py-2 rounded-full text-stone-600 hover:text-stone-900 transition";
+                formR.classList.remove('hidden');
+                formL.classList.add('hidden');
+                title.innerText = "Daftar Akun Baru";
+                sub.innerText = "Lengkapi nama dan nomor HP Anda untuk membuat akun.";
+            }
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const phone = document.getElementById('loginPhone').value.trim();
+            const pass = document.getElementById('loginPassword').value;
+
+            const existingUser = usersDB.find(u => u.phone === phone && u.password === pass);
+
+            if (existingUser) {
+                loginAs(existingUser.name);
+            } else {
+                alert("Nomor HP atau kata sandi salah, atau akun belum terdaftar. Silakan lakukan pendaftaran terlebih dahulu!");
+                setAuthTab('daftar');
+            }
+        }
+
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const pass = document.getElementById('regPassword').value;
+
+            const phoneExists = usersDB.some(u => u.phone === phone);
+            if (phoneExists) {
+                alert("Nomor HP ini sudah terdaftar! Silakan pilih tab Masuk.");
+                setAuthTab('masuk');
+                document.getElementById('loginPhone').value = phone;
+                return;
+            }
+
+            const newUser = { name: name, phone: phone, password: pass };
+            usersDB.push(newUser);
+            localStorage.setItem('taniPintarUsers', JSON.stringify(usersDB));
+
+            alert(`Pendaftaran Berhasil! Selamat datang, ${name}.`);
+            loginAs(name);
+        }
+
+        function togglePassVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye';
+            }
+        }
+
+        // Fungsi Handler Kirim Pertanyaan dari Kolom Ketik Manual
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const inputField = document.getElementById('chatInputQuery');
+            const queryText = inputField.value.trim();
+            
+            if (!queryText) return;
+
+            sendQuickQuery(queryText);
+            inputField.value = '';
+        }
+
+        function sendQuickQuery(queryText) {
+            const chatBubble = document.getElementById('aiChatText');
+            if (chatBubble) {
+                chatBubble.innerHTML = `Pertanyaan Anda: <em>"${queryText}"</em><br><br>⏳ <strong>Mbah Tani sedang berpikir...</strong>`;
+            }
+
+            setTimeout(() => {
+                let answer = "";
+                const q = queryText.toLowerCase();
+
+                if (q.includes('tomat')) {
+                    answer = "Awas Pak/Bu Tani! Tomat sebaiknya ditunda dulu. Pasokan tomat sedang banyak melimpah, diprediksi harga panen bakal anjlok murah. Lebih baik ganti Bawang Merah atau Terong!";
+                } else if (q.includes('cabai') || q.includes('cabe')) {
+                    answer = "For Cabai Merah saat ini harganya sedang tinggi, namun hati-hati banyak petani lain ikut menanam. Jika ingin untung stabil, Bawang Merah tergolong sangat bagus ditanam minggu ini.";
+                } else if (q.includes('bulan ini') || q.includes('nanam apa')) {
+                    answer = "Saran Mbah Tani: Bulan ini sangat bagus menanam Bawang Merah atau Kubis! Hindari menanam Cabai Merah berlebihan agar tidak banjir stok saat panen nanti.";
+                } else {
+                    answer = `Mbah Tani membaca pertanyaan: "${queryText}". Saran Mbah: Selalu cek warna hijau pada menu Saran Tanam aplikasi ini sebelum mulai mengolah sawah nggih!`;
+                }
+
+                if (chatBubble) {
+                    chatBubble.innerHTML = `💬 <strong>Mbah Tani:</strong><br>"${answer}"`;
+                }
+            }, 1000);
+        }
+
+        function handleReportSubmit(e) {
+            e.preventDefault();
+            const veg = document.getElementById('laporVeggie').value;
+            const val = document.getElementById('laporValue').value;
+            alert(`Laporan Berhasil!\n\nData ${veg} (${val}) telah ditambahkan ke sistem gotong royong petani.`);
+            switchTab('pasar');
+        }
+    </script>
+</body>
+</html>
